@@ -5,8 +5,7 @@ namespace Ideup\SimplePaginatorBundle\Templating\Helper;
 use
     Doctrine\Common\Util\Debug,
     Symfony\Component\Templating\Helper\Helper,
-    Symfony\Component\DependencyInjection\ContainerInterface,
-    Ideup\SimplePaginatorBundle\Paginator\Paginator as Paginator
+    Symfony\Component\DependencyInjection\ContainerInterface
 ;
 
 /**
@@ -19,29 +18,40 @@ use
  */
 class PaginatorHelper extends Helper
 {
-    protected $paginator;
     protected $container;
 
-    public function __construct(Paginator $paginator, ContainerInterface $container)
+    /**
+     *  @param ContainerInterface $container
+     */
+    public function __construct(ContainerInterface $container)
     {
-        $this->paginator = $paginator;
         $this->container = $container;
     }
 
+    /**
+     *  @return Ideup\SimplePaginatorBundle\Paginator\Paginator
+     */
     public function getPaginator()
     {
-        return $this->paginator;
+        return $this->container->get('ideup.simple_paginator');
     }
 
-    public function render($route, $id = null, $options = array(), $view = null)    
+    /**
+     *  @param string $route
+     *  @param string $id
+     *  @param array $options
+     *  @param string $view
+     *  @return string
+     */
+    public function render($route, $id = null, $options = array(), $view = null)
     {
         $view = (!is_null($view)) ? $view : 'IdeupSimplePaginatorBundle:Paginator:simple-paginator-list-view.html.twig';
 
         $defaultOptions = array(
-            'container_class'       => 'simple_paginator',            
+            'container_class'       => 'simple_paginator',
             'id'                    => $id,
             'route'                 => $route,
-            
+
             'previousPageText'      => 'previous',
             'previousEnabledClass'  => 'left',
             'previousDisabledClass' => 'left_disabled',
@@ -49,28 +59,25 @@ class PaginatorHelper extends Helper
             'firstPageText'         => 'first',
             'firstEnabledClass'     => 'first',
             'firstDisabledClass'    => 'first_disabled',
-            
-            'firstPage'             => $this->paginator->getFirstPage(),
 
-            'previousPage'          => $this->paginator->getPreviousPage($id),
+            'firstPage'             => $this->getPaginator()->getFirstPage(),
 
-            'minPage'               => $this->paginator->getMinPageInRange($id),
-            'maxPage'               => $this->paginator->getMaxPageInRange($id),
+            'previousPage'          => $this->getPaginator()->getPreviousPage($id),
 
-            'currentPage'           => $this->paginator->getCurrentPage($id),
+            'minPage'               => $this->getPaginator()->getMinPageInRange($id),
+            'maxPage'               => $this->getPaginator()->getMaxPageInRange($id),
+
+            'currentPage'           => $this->getPaginator()->getCurrentPage($id),
             'currentClass'          => 'current',
 
-            'firstPage'             => $this->paginator->getFirstPage(),
-            'lastPage'              => $this->paginator->getLastPage($id),
+            'nextPage'              => $this->getPaginator()->getNextPage($id),
 
-            'nextPage'              => $this->paginator->getNextPage($id),
-
-            'lastPage'              => $this->paginator->getLastPage($id),
+            'lastPage'              => $this->getPaginator()->getLastPage($id),
 
             'lastPageText'          => 'last',
             'lastEnabledClass'      => 'last',
             'lastDisabledClass'     => 'last_disabled',
-            
+
             'nextPageText'          => 'next',
             'nextEnabledClass'      => 'right',
             'nextDisabledClass'     => 'right_disabled',
@@ -83,6 +90,9 @@ class PaginatorHelper extends Helper
         return $this->container->get('templating')->render($view, $options);
     }
 
+    /**
+     *  @return string
+     */
     public function getName()
     {
         return 'simple_paginator_helper';
